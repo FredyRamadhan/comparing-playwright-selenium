@@ -11,6 +11,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from axe_selenium_python import Axe
+from dotenv import load_dotenv
+
+# Load credentials from .env
+load_dotenv()
+BASE_URL = os.getenv("BASE_URL")
+NC_USER  = os.getenv("NC_USER")
+NC_PASS  = os.getenv("NC_PASS")
 
 # --- LOGGING HELPERS ---
 def log(step, msg=""):
@@ -52,9 +59,9 @@ class NextcloudTestSuite(unittest.TestCase):
         cls.axe = Axe(cls.driver)
         
         # --- KONFIGURASI NEXTCLOUD ---
-        cls.URL = "http://localhost:8081" 
-        cls.USERNAME = "admin"         
-        cls.PASSWORD = "admin"
+        cls.URL = BASE_URL
+        cls.USERNAME = NC_USER
+        cls.PASSWORD = NC_PASS
         # -----------------------------
         
         # --- TEST DATA STATE ---
