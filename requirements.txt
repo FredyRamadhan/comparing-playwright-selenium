@@ -1,0 +1,12 @@
+# --- Playwright Script Dependencies ---
+playwright
+axe-playwright-python
+
+# --- Selenium Script Dependencies ---
+selenium
+webdriver-manager
+axe-selenium-python
+
+# --- Shared & Wrapper Script Dependencies ---
+python-dotenv
+psutil
