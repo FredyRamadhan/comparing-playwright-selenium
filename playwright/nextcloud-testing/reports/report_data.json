@@ -1,0 +1,118 @@
+{
+  "generated_at": "05. 05. 2026 13:00:45",
+  "duration": 127.6,
+  "results": [
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_axe_login_page",
+      "nodeid": "tests/test_accessibility.py::TestAxeScore::test_axe_login_page",
+      "outcome": "passed",
+      "duration": 2.54,
+      "error": ""
+    },
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_axe_files_page",
+      "nodeid": "tests/test_accessibility.py::TestAxeScore::test_axe_files_page",
+      "outcome": "passed",
+      "duration": 4.45,
+      "error": ""
+    },
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_axe_settings_page",
+      "nodeid": "tests/test_accessibility.py::TestAxeScore::test_axe_settings_page",
+      "outcome": "passed",
+      "duration": 2.89,
+      "error": ""
+    },
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_axe_dashboard_page",
+      "nodeid": "tests/test_accessibility.py::TestAxeScore::test_axe_dashboard_page",
+      "outcome": "passed",
+      "duration": 3.27,
+      "error": ""
+    },
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_login_tanpa_password",
+      "nodeid": "tests/test_accessibility.py::TestUserErrorProtection::test_login_tanpa_password",
+      "outcome": "passed",
+      "duration": 5.18,
+      "error": ""
+    },
+    {
+      "filename": "test_accessibility.py",
+      "test_name": "test_delete_multiple_files_ada_konfirmasi",
+      "nodeid": "tests/test_accessibility.py::TestUserErrorProtection::test_delete_multiple_files_ada_konfirmasi",
+      "outcome": "failed",
+      "duration": 23.65,
+      "error": "self = <test_accessibility.TestUserErrorProtection object at 0x0000026A3FAD2E90>\nnc_logged_in = <Page url='http://localhost:8081/apps/files/files'>\ntmp_path = WindowsPath('C:/Users/Lenovo/AppData/Local/Temp/pytest-of-Lenovo/pytest-28/test_delete_multiple_files_ada0')\n\n    def test_delete_multiple_files_ada_konfirmasi(self, nc_logged_in, tmp_path):\n        \"\"\"\n        [TEMUAN] Nextcloud 28 TIDAK menampilkan dialog konfirmasi saat menghapus\n        multiple file. File langsung masuk Trash tanpa peringatan apapun.\n        Ini adalah UX/safety issue — user bisa tidak sengaja menghapus banyak file\n        sekaligus tanpa ada kesempatan untuk membatalkan.\n        \"\"\"\n        p = nc_logged_in\n        p.goto(f\"{BASE_URL}/apps/files\")\n        p.wait_for_load_state(\"networkidle\")\n    \n        # Upload 2 file — pakai suffix _0 dan _1 agar nama selalu beda\n        # meski int(time.time()) sama karena loop jalan dalam 1 detik\n        filenames = []\n        for i in range(2):\n            fname = f\"multi_delete_{int(time.time())}_{i}.txt\"\n            filenames.append(fname)\n            f = tmp_path / fname\n            f.write_text(f\"file {i}\")\n    \n            p.click('.upload-picker button:last-child, button:has-text(\"New\")')\n            p.wait_for_timeout(500)\n            with p.expect_file_chooser() as fc_info:\n                p.click('button:has-text(\"Upload files\"), li:has-text(\"Upload files\")')\n            fc_info.value.set_files(str(f))\n            p.wait_for_timeout(2000)\n    \n        p.reload()\n        p.wait_for_load_state(\"networkidle\")\n    \n        # Centang checkbox dengan force karena label intercept\n        for fname in filenames:\n            row = p.get_by_role(\"row\", name=fname, exact=False)\n            checkbox = row.locator('input[type=\"checkbox\"]')\n            checkbox.click(force=True)\n            p.wait_for_timeout(500)\n    \n        selected = p.locator('input[type=\"checkbox\"]:checked').count()\n        print(f\"\\nFile terselect: {selected}\")\n    \n        # Debug: print SEMUA button di halaman yang visible\n        # untuk nemuin selector \"...\" di selection bar\n        all_btns = p.locator('button:visible').all()\n        print(f\"Semua button visible ({len(all_btns)} total):\")\n        for b in all_btns:\n            label = b.get_attribute('aria-label') or ''\n            txt = b.inner_text().strip()\n            data_cy = b.get_attribute('data-cy-files-list-selection-action') or ''\n            if label or data_cy:\n                print(f\"  aria-label='{label}' | data-cy='{data_cy}' | text='{txt}'\")\n    \n        # Klik \"...\" di selection bar atas (samping \"Move or copy\")\n        # Selection bar Nextcloud 28 bukan di thead tapi di baris header tersendiri\n        more_btn_selectors = [\n            '[data-cy-files-list-selection-action=\"more\"]',\n            'button[aria-label=\"More actions\"]:visible',\n            'button[aria-label=\"Actions\"]:visible',\n            # Cari di parent yang mengandung teks \"selected\"\n            ':has-text(\"selected\") >> button:last-child',\n        ]\n    \n        clicked_more = False\n        for sel in more_btn_selectors:\n            try:\n                btn = p.locator(sel).first\n                btn.wait_for(timeout=2000)\n                btn.scroll_into_view_if_needed()\n                btn.click()\n                clicked_more = True\n                print(f\"Tombol '...' diklik: {sel}\")\n                p.wait_for_timeout(500)\n                break\n            except:\n                continue\n    \n        assert clicked_more, \"Tidak bisa menemukan tombol '...' di selection bar — lihat debug output di atas\"\n    \n        # Klik \"Delete files\" dari dropdown\n        delete_selectors = [\n            'button:has-text(\"Delete files\")',\n            '[role=\"menuitem\"]:has-text(\"Delete files\")',\n            'li:has-text(\"Delete files\")',\n        ]\n    \n        clicked_delete = False\n        for sel in delete_selectors:\n            try:\n                p.wait_for_selector(sel, timeout=3000)\n                p.click(sel)\n                clicked_delete = True\n                print(f\"Delete files diklik: {sel}\")\n                break\n            except:\n                continue\n    \n        assert clicked_delete, \"Tidak bisa menemukan 'Delete files' di dropdown\"\n    \n        # Cek apakah muncul dialog konfirmasi\n        # TEMUAN: Nextcloud 28 tidak menampilkan konfirmasi — langsung hapus ke Trash\n        has_confirmation = False\n        try:\n            p.wait_for_selector(\n                '[role=\"dialog\"], .oc-dialog, button:has-text(\"Confirm\"), button:has-text(\"Yes\")',\n                timeout=3000\n            )\n            has_confirmation = True\n        except:\n            has_confirmation = False\n    \n        if not has_confirmation:\n            print(\"\\n[TEMUAN] Tidak ada dialog konfirmasi!\")\n            print(\"         File langsung dihapus ke Trash tanpa meminta konfirmasi user.\")\n            print(\"         Ini adalah UX/safety issue di Nextcloud 28.\")\n    \n        # Test ini sengaja FAIL untuk mendokumentasikan bahwa fitur konfirmasi\n        # sebelum hapus multiple file TIDAK ada di Nextcloud 28.\n>       assert has_confirmation, (\n            \"[TEMUAN] Nextcloud 28 tidak menampilkan dialog konfirmasi saat menghapus \"\n            \"multiple file. File langsung masuk Trash tanpa peringatan. \"\n            \"Ini adalah UX/safety issue yang perlu diperhatikan.\"\n        )\nE       AssertionError: [TEMUAN] Nextcloud 28 tidak menampilkan dialog konfirmasi saat menghapus multiple file. File langsung masuk Trash tanpa peringatan. Ini adalah UX/safety issue yang perlu diperhatikan.\nE       assert False\n\ntests\\test_accessibility.py:222: AssertionError"
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_login_berhasil",
+      "nodeid": "tests/test_navigation.py::TestAuth::test_login_berhasil",
+      "outcome": "passed",
+      "duration": 2.09,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_navigasi_ke_files",
+      "nodeid": "tests/test_navigation.py::TestNavigasi::test_navigasi_ke_files",
+      "outcome": "passed",
+      "duration": 3.0,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_navigasi_ke_settings",
+      "nodeid": "tests/test_navigation.py::TestNavigasi::test_navigasi_ke_settings",
+      "outcome": "passed",
+      "duration": 1.49,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_navigasi_ke_dashboard",
+      "nodeid": "tests/test_navigation.py::TestNavigasi::test_navigasi_ke_dashboard",
+      "outcome": "passed",
+      "duration": 2.07,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_upload_file",
+      "nodeid": "tests/test_navigation.py::TestUploadFile::test_upload_file",
+      "outcome": "passed",
+      "duration": 4.61,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_create_folder",
+      "nodeid": "tests/test_navigation.py::TestCreateFolder::test_create_folder",
+      "outcome": "passed",
+      "duration": 10.53,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_delete_file",
+      "nodeid": "tests/test_navigation.py::TestDeleteFile::test_delete_file",
+      "outcome": "passed",
+      "duration": 9.26,
+      "error": ""
+    },
+    {
+      "filename": "test_navigation.py",
+      "test_name": "test_logout",
+      "nodeid": "tests/test_navigation.py::TestLogout::test_logout",
+      "outcome": "passed",
+      "duration": 7.08,
+      "error": ""
+    }
+  ]
+}
