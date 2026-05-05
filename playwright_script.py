@@ -43,7 +43,7 @@ class NextcloudTestSuite(unittest.TestCase):
         
         # Match Selenium's non-headless default and window size
         cls.browser = cls.playwright.chromium.launch(
-            headless=False,
+            headless=False, # Set to False to see the browser during test execution
             args=["--window-size=1920,1080", "--no-sandbox", "--disable-dev-shm-usage"]
         )
         # viewport=None ensures the browser respects the window-size arg above
