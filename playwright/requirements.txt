@@ -1,4 +1,0 @@
-pytest
-playwright
-python-dotenv 
-axe-playwright-python
