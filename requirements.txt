@@ -10,3 +10,9 @@ axe-selenium-python
 # --- Shared & Wrapper Script Dependencies ---
 python-dotenv
 psutil
+
+# --- Visualization ---
+pandas
+matplotlib
+numpy
+scipy
