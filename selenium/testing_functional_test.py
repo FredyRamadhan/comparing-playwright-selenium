@@ -228,6 +228,61 @@ def main():
             log("ERROR", f"FOLDER FAILURE: {e}")
             dump_state(driver, "folder_error")
             raise
+        
+        time.sleep(2)  # Small pause before next action
+        
+        # ================= DELETE FILE =================
+        try:
+            log("DELETE", f"Locating row for {FILE_NAME}")
+            
+            # 1. Use the data-cy attribute to find the exact row (adapted from Playwright)
+            row_selector = f"tr[data-cy-files-list-row-name='{FILE_NAME}']"
+            row_element = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, row_selector))
+            )
+            
+            # Hover over the row to ensure the Actions button becomes interactable
+            ActionChains(driver).move_to_element(row_element).perform()
+            time.sleep(0.5)
+            
+            log("DELETE", "Opening actions menu")
+            # 2. Find and click the Actions button within that specific row
+            action_button = row_element.find_element(By.CSS_SELECTOR, "[aria-label='Actions']")
+            driver.execute_script("arguments[0].click();", action_button)
+            
+            # Wait for the popover menu to render
+            time.sleep(1)
+            
+            log("DELETE", "Scrolling menu and clicking Delete")
+            # 3. Simulate pressing "End" to scroll to the bottom of the actions menu (adapted from Playwright)
+            ActionChains(driver).send_keys(Keys.END).perform()
+            time.sleep(0.5)
+            
+            # 4. Find the Delete button. Playwright uses '.last' because there are sometimes hidden DOM clones.
+            delete_xpath = "//*[@role='menu']//button[contains(., 'Delete')]"
+            
+            # Wait for the delete buttons to be present
+            wait.until(EC.presence_of_element_located((By.XPATH, delete_xpath)))
+            
+            # Get all matching delete buttons and click the last one (matches Playwright's `.last` logic)
+            delete_buttons = driver.find_elements(By.XPATH, delete_xpath)
+            if delete_buttons:
+                driver.execute_script("arguments[0].click();", delete_buttons[-1])
+            else:
+                raise Exception("Could not find the 'Delete file' button in the menu.")
+            
+            log("DELETE", "Waiting for file to disappear")
+            # 5. Verify the file is actually removed from the UI
+            wait.until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, row_selector))
+            )
+            
+            log("DELETE", "SUCCESS")
+
+        except Exception as e:
+            log("ERROR", f"DELETE FAILURE: {e}")
+            dump_state(driver, "delete_error")
+            raise
 
         log("FINAL", "✅ ALL TESTS PASSED")
 
