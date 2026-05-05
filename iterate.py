@@ -42,25 +42,40 @@ def run_script(script_name, iteration):
 
         try:
             p = psutil.Process(process.pid)
+            
+            # Prime the CPU calculation (psutil needs a baseline call before it can calculate a %)
+            p.cpu_percent(interval=None) 
+            
             # Monitor resources while the process is active
             while process.poll() is None:
                 try:
-                    # interval=0.5 blocks for 0.5s, serving as our sleep timer
-                    cpu = p.cpu_percent(interval=0.5) 
-                    mem = p.memory_info().rss / (1024 * 1024)  # Convert bytes to MB
-
-                    cpu_usage.append(cpu)
-                    mem_usage.append(mem)
+                    # 1. Grab the Python process AND all spawned browsers/drivers
+                    all_procs = [p] + p.children(recursive=True)
                     
-                    # Print a dot to the console so you know it's alive
+                    total_cpu = 0.0
+                    total_mem = 0.0
+                    
+                    for proc in all_procs:
+                        try:
+                            # interval=None makes it non-blocking, returning % since last call
+                            total_cpu += proc.cpu_percent(interval=None)
+                            total_mem += proc.memory_info().rss
+                        except (psutil.NoSuchProcess, psutil.AccessDenied):
+                            # Processes might close mid-loop, just ignore them
+                            pass
+                    
+                    cpu_usage.append(total_cpu)
+                    mem_usage.append(total_mem / (1024 * 1024)) # Convert bytes to MB
+                    
+                    # 2. Block for 0.5 seconds to act as our polling interval
+                    time.sleep(0.5)
                     print(".", end="", flush=True) 
                     
                 except Exception:
-                    # Catch broad exceptions (like psutil.ZombieProcess) so it doesn't break the loop
+                    # Catch broad exceptions (like psutil.ZombieProcess) if the main process dies mid-loop
                     break
             
-            # Print a newline when the dots finish
-            print() 
+            print() # Print a newline when the dots finish
             
         except Exception:
             pass # Process finished extremely quickly
