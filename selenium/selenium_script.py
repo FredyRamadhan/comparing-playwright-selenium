@@ -60,8 +60,8 @@ class NextcloudTestSuite(unittest.TestCase):
         # --- TEST DATA STATE ---
         # Initialize test data strings here so they are reliably shared across test methods
         timestamp = datetime.now().strftime('%H%M%S')
-        cls.test_file_name = f"sqa_test_file_{timestamp}.txt"
-        cls.test_folder_name = f"Test_Folder_Automation_{timestamp}"
+        cls.test_file_name = f"selenium_test_file_{timestamp}.txt"
+        cls.test_folder_name = f"Selenium_Test_Folder_{timestamp}"
         cls.test_file_path = os.path.abspath(cls.test_file_name)
 
         # Create the local dummy file once for the upload test
